@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+<html xmlns="http://www.w3.org/1999/xhtml">  
+
+<head>  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<title>Untitled 1</title>  
+<style type="text/css">  
+.style1 {  
+    font-size: x-small;  
+}  
+</style> 
+<script type="text/javascript">  
+/**
+	画点
+*/	
+function makedot(x, y){ 
+  pointDiv = "<div style='height:1px;position:absolute;left:" + x +
+  	"px;top:" + y + "px;width:1px;background:#f00;overflow:hidden'></div>"; 
+  return pointDiv;
+} 
+/**  
+  根据两点坐标画直线。  
+*/  
+
+function line(x1,y1,x2,y2){  
+  var slope; //斜率
+  var direction;//坐标运动方向
+  var tx = x2 - x1;
+  var ty = y2 - y1;
+  if(tx == 0 && ty == 0)return;
+  var points = "";
+  var axis;//坐标轴上的坐标
+  if(Math.abs(tx) >= Math.abs(ty)){//在x轴上移动
+  	direction = tx > 0 ? 1 : -1;
+  	tx = Math.abs(tx);
+  	slope = ty / tx;
+  	axis = x1;
+  	for(i = 0; i < tx; i ++){
+  		points += makedot(axis, y1 + i * slope);
+  		axis += direction;
+  	}
+  	  
+  }else{//在y轴上移动
+  	direction = ty > 0 ? 1 : -1;
+  	ty = Math.abs(ty);
+  	slope = tx / ty;  
+  	axis = y1;	
+  	for(i = 0; i < ty; i ++){
+  		points += makedot(x1 + i * slope, axis);
+  		axis += direction;
+  	}
+  }
+  var container = document.getElementById("container");
+  container.innerHTML += points; 
+} 
+var oldPoint = null;
+//获取鼠标位置
+function mousePosition(ev){
+	ev = ev || window.event;
+	if(ev.pageX || ev.pageY){
+		return {x:ev.pageX, y:ev.pageY};
+	}
+	var doc = document.documentElement, body = document.body;
+	var pageX = event.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc && doc.clientLeft || body && body.clientLeft || 0);
+	var pageY = event.clientY + (doc && doc.scrollTop  || body && body.scrollTop  || 0) - (doc && doc.clientTop  || body && body.clientTop  || 0);        
+	return {x:pageX, y:pageY};
+}
+
+function recordPoint(ev){
+	
+	var point = mousePosition(ev);
+	if(oldPoint != null){
+		line(oldPoint.x, oldPoint.y, point.x, point.y);
+	}
+	oldPoint = point;
+}
+
+
+</script>
+</head>  
+
+<body>  
+<div id="container" style="width: 1000px; height: 600px; border:1px #bfbfbf solid;" onclick="recordPoint(event);">
+	
+</div>
+<script type="text/javascript"> 
+	line(19,19,22,300); 
+</script>
+</body>  
+
+</html> 

@@ -1,0 +1,24 @@
+<! doctype html>  
+<html>  
+<head>  
+<script type="text/javascript">  
+		function drawDiagonal(){
+			//取得canvas元素及其绘图上下文
+		 var c = document.getElementById("diagonal");
+		 var cxt = c.getContext("2d");
+		 //使用绝对坐标来创建一条路径
+		 cxt.beginPath();
+		 cxt.moveTo(0,0);
+		 cxt.lineTo(140,70);
+		 //将这条线绘制到canvas上
+		 cxt.stroke();
+		}
+		window.addEventListener("load",drawDiagonal,true);
+</script>
+</head>  
+<body>
+<canvas id="diagonal"   style="border: 1px solid"width="300" height="300"> 浏览器不支持此标签 </canvas>
+<input type="button" value="画线" onClick="drawDiagonal();" />
+
+</body>  
+</html> 

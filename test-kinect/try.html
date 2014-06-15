@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content_Type" content="text/html" charset="utf-8">
+<title>Video Search V1.0test</title>
+<link rel='stylesheet' href="css/boldlight.css"/>
+<!--script type="text/javascript" src="js/keyboard.js"></script-->
+<!--script type="text/javascript" src="js/jquery-1.8.2.js"></script-->
+<!--script type="text/javascript" src="js/demo.js"></script-->
+<script type="text/javascript" src='js/humane.js'></script>
+
+
+
+
+<script language="javascript">
+document.onkeydown=showkey;
+function showkey(){
+var event=document.all?window.event:arguments[0];
+key = event.keyCode;
+if (key == 37) {humane.error("left"); document.getElementById("central_stack").innerHTML = "left";};
+if (key == 38) {humane.error("up"); document.getElementById("central_stack").innerHTML = "up";};
+if (key == 39) {humane.error("right"); document.getElementById("central_stack").innerHTML = "right";};
+if (key == 40) {humane.error("down"); document.getElementById("central_stack").innerHTML = "down";};
+if (key == 13) {humane.error("enter"); document.getElementById("central_stack").innerHTML = "enter";};
+if (key == 17) {humane.error("ctrl"); document.getElementById("central_stack").innerHTML = "ctrl";};
+if (key == 37 && key == 38) {humane.error("top-left"); document.getElementById("central_stack").innerHTML = "top-left";};
+if (key == 37 && key == 40) {humane.error("bottom-left"); document.getElementById("central_stack").innerHTML = "bottom-left";};
+if (key == 39 && key == 38) {humane.error("top-right"); document.getElementById("central_stack").innerHTML = "top-right";};
+if (key == 39 && key == 40) {humane.error("bottom-right"); document.getElementById("central_stack").innerHTML = "bottom-right";};
+
+}
+humane.error = humane.spawn({ addnCls: 'humane-libnotify-error', timeout: 1500 });
+
+
+
+</script>
+</head>
+<body>
+<h1>demo</h1>
+<div id="central_stack">Press some key</div>
+</body>
+</html>

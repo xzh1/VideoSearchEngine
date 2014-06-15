@@ -1,0 +1,74 @@
+{
+	"gd$etag":"W/\"C0QEQn47eCp7I2A9WhNUFE0.\"",
+	"id":{"$t":"tag:youtube.com,2008:video:N8G4YgQyEMk"},
+	"published":{"$t":"2010-11-17T07:33:09.000Z"},
+	"updated":{"$t":"2013-01-05T15:55:03.000Z"},
+	"category":[
+		{"scheme":"http://schemas.google.com/g/2005#kind","term":"http://gdata.youtube.com/schemas/2007#video"},
+		{"scheme":"http://gdata.youtube.com/schemas/2007/categories.cat","term":"Animals","label":"Pets & Animals"}
+	],
+	"title":{"$t":"Happy wake up"},
+	"content":{"type":"application/x-shockwave-flash","src":"http://www.youtube.com/v/N8G4YgQyEMk?version=3&f=videos&app=youtube_gdata"},
+	"link":[
+		{"rel":"alternate","type":"text/html","href":"http://www.youtube.com/watch?v=N8G4YgQyEMk&feature=youtube_gdata"},
+		{"rel":"http://gdata.youtube.com/schemas/2007#video.responses","type":"application/atom+xml","href":"http://gdata.youtube.com/feeds/api/videos/N8G4YgQyEMk/responses"},
+		{"rel":"http://gdata.youtube.com/schemas/2007#video.related","type":"application/atom+xml","href":"http://gdata.youtube.com/feeds/api/videos/N8G4YgQyEMk/related"},
+		{"rel":"http://gdata.youtube.com/schemas/2007#mobile","type":"text/html","href":"http://m.youtube.com/details?v=N8G4YgQyEMk"},
+		{"rel":"http://gdata.youtube.com/schemas/2007#uploader","type":"application/atom+xml","href":"http://gdata.youtube.com/feeds/api/users/yjY_E-FML1mvDgGIqAqVUA"},
+		{"rel":"self","type":"application/atom+xml","href":"http://gdata.youtube.com/feeds/api/videos/N8G4YgQyEMk"}
+	],
+	"author":[
+		{
+			"name":{"$t":"samcjung"},
+			"uri":{"$t":"http://gdata.youtube.com/feeds/api/users/samcjung"},
+			"yt$userId":{"$t":"yjY_E-FML1mvDgGIqAqVUA"}
+		}
+	],
+	"yt$accessControl":[
+		{"action":"comment","permission":"allowed"},
+		{"action":"commentVote","permission":"allowed"},
+		{"action":"videoRespond","permission":"moderated"},
+		{"action":"rate","permission":"allowed"},
+		{"action":"embed","permission":"allowed"},
+		{"action":"list","permission":"allowed"},
+		{"action":"autoPlay","permission":"allowed"},
+		{"action":"syndicate","permission":"allowed"}
+	],
+	"gd$comments":{"gd$feedLink":{"rel":"http://gdata.youtube.com/schemas/2007#comments","href":"http://gdata.youtube.com/feeds/api/videos/N8G4YgQyEMk/comments","countHint":2657}},
+	"yt$hd":{},
+	"media$group":{
+		"media$category":[
+			{"$t":"Animals","label":"Pets & Animals","scheme":"http://gdata.youtube.com/schemas/2007/categories.cat"}
+		],
+		"media$content":[
+			{"url":"http://www.youtube.com/v/N8G4YgQyEMk?version=3&f=videos&app=youtube_gdata","type":"application/x-shockwave-flash","medium":"video","isDefault":"true","expression":"full","duration":136,"yt$format":5},
+			{"url":"rtsp://v3.cache5.c.youtube.com/CiILENy73wIaGQnJEDIEYrjBNxMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp","type":"video/3gpp","medium":"video","expression":"full","duration":136,"yt$format":1},
+			{"url":"rtsp://v3.cache5.c.youtube.com/CiILENy73wIaGQnJEDIEYrjBNxMYESARFEgGUgZ2aWRlb3MM/0/0/0/video.3gp","type":"video/3gpp","medium":"video","expression":"full","duration":136,"yt$format":6}
+		],
+		"media$credit":[
+			{"$t":"samcjung","role":"uploader","scheme":"urn:youtube","yt$display":"samcjung","yt$type":"partner"}
+		],
+		"media$description":{"$t":"Happy is Maltese & Daschund mix.","type":"plain"},
+		"media$keywords":{},
+		"media$license":{"$t":"youtube","type":"text/html","href":"http://www.youtube.com/t/terms"},
+		"media$player":{"url":"http://www.youtube.com/watch?v=N8G4YgQyEMk&feature=youtube_gdata_player"},
+		"media$thumbnail":[
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/default.jpg","height":90,"width":120,"time":"00:01:08","yt$name":"default"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/mqdefault.jpg","height":180,"width":320,"yt$name":"mqdefault"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/hqdefault.jpg","height":360,"width":480,"yt$name":"hqdefault"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/sddefault.jpg","height":480,"width":640,"yt$name":"sddefault"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/1.jpg","height":90,"width":120,"time":"00:00:34","yt$name":"start"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/2.jpg","height":90,"width":120,"time":"00:01:08","yt$name":"middle"},
+			{"url":"http://i.ytimg.com/vi/N8G4YgQyEMk/3.jpg","height":90,"width":120,"time":"00:01:42","yt$name":"end"}
+		],
+		"media$title":{"$t":"Happy wake up","type":"plain"},
+		"yt$aspectRatio":{"$t":"widescreen"},
+		"yt$duration":{"seconds":"136"},
+		"yt$uploaded":{"$t":"2010-11-17T07:33:09.000Z"},
+		"yt$uploaderId":{"$t":"UCyjY_E-FML1mvDgGIqAqVUA"},
+		"yt$videoid":{"$t":"N8G4YgQyEMk"}
+	},
+	"gd$rating":{"average":4.931323,"max":5,"min":1,"numRaters":13265,"rel":"http://schemas.google.com/g/2005#overall"},
+	"yt$statistics":{"favoriteCount":"0","viewCount":"2518017"},
+	"yt$rating":{"numDislikes":"228","numLikes":"13037"}
+},

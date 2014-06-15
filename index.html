@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content_Type" content="text/html" charset="utf-8">
+<title>Video Search V1.0</title>
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+<link rel='stylesheet' href="css/boldlight.css"/>
+<!--script type="text/javascript" src="js/keyboard.js"></script>
+<script type="text/javascript" src="js/jquery-1.8.2.js"></script-->
+<script type="text/javascript" src="js/detector.js"></script>
+<script type="text/javascript" src="js/d3.v3.min.js"></script>
+<script type="text/javascript" src='js/humane.js'></script>
+<script type="text/javascript" src="js/swfobject.js"></script>
+<script type="text/javascript">
+	if (document.createElement("input").webkitSpeech === undefined) {
+		alert("Your browser doesn't support speech recognition.");
+	}
+	
+	
+	//base function for fade in/out
+	var iBase = {
+		Id: function(name){
+			return document.getElementById(name);
+		},
+		//set opcity 0-100
+		SetOpacity: function(ev, v){
+			ev.filters ? ev.style.filter = 'alpha(opacity=' + v + ')' : ev.style.opacity = v / 100;
+		}
+	}
+	//fade in effect
+	function fadeIn(elem, speed, opacity){
+		/*
+		 * parameters:
+		 * elem==>the element needs to be fadeIn
+		 * speed==>fadeIn speed 
+		 * opacity==>final opacity
+		 */
+		speed = speed || 20;
+		opacity = opacity || 100;
+		//display element but set opacity to 0
+		elem.style.display = 'block';
+		iBase.SetOpacity(elem, 0);
+		var val = 0;
+		//increase opacity with a speed
+		(function(){
+			iBase.SetOpacity(elem, val);
+			val += 5;
+			if (val <= opacity) {
+				setTimeout(arguments.callee, speed);
+			}
+		})();
+	}
+	
+	//fade out effect
+	function fadeOut(elem, speed, opacity){
+		/*
+		 * parameters:
+		 * elem==>element need to fade out
+		 * speed==>fade out speed
+		 * opacity==>final opacity
+		 */
+		speed = speed || 20;
+		opacity = opacity || 0;
+		//initial opacity to 100
+		var val = 100;
+		//decrease opacity with speed
+		(function(){
+			iBase.SetOpacity(elem, val);
+			val -= 5;
+			if (val >= opacity) {
+				setTimeout(arguments.callee, speed);
+			}else if (val < 0) {
+				//hide element when reach final opacity
+				elem.style.display = 'none';
+			}
+		})();
+	}
+	
+	
+	
+	humane.error = humane.spawn({ addnCls: 'humane-libnotify-error', timeout: 1500 });
+	humane.info = humane.spawn({addnCls: 'humane-libnotify-info', timeout: 1500});
+	var keywordstr = "";
+	var entries = [];
+	var state = 1;
+	var currentchoice;
+	
+	String.prototype.trim = function(){
+        //replace all the space with plus
+		return this.replace(/[(^\s*)|(\s*$)]/g, "+");
+    }
+	
+	function emptyinput(id)
+	{
+		if(document.getElementById(id).value.length==0)
+		{
+			document.getElementById(id).className="searchpanel_frame";
+		}
+		else
+		{
+			document.getElementById(id).className="searchpanel_frame input";
+		}
+	}
+	
+	function entersearch()
+	{
+		var event = window.event || arguments.callee.caller.arguments[0];
+		if (event.keyCode == 13)
+		{
+			search();
+			drawinstruction();
+			//sleep(15000);
+			//document.getElementById("container").removeChild(document.getElementById("masker"));
+		}
+	}
+	
+	function search()
+	{
+		if(document.getElementById("searchframe").value.length == 0)
+		{
+			humane.error("please fill in keywords in searching bar!");
+		}
+		else
+		{
+			document.getElementById("right_top_stack").style.display = "none";
+			document.getElementById("mid_top_stack").style.display = "none";
+			document.getElementById("left_top_stack").style.display = "none";
+			document.getElementById("right_mid_stack").style.display = "none";
+			document.getElementById("left_mid_stack").style.display = "none";
+			document.getElementById("right_bottom_stack").style.display = "none";
+			document.getElementById("mid_bottom_stack").style.display = "none";
+			document.getElementById("left_bottom_stack").style.display = "none";
+			
+			keywordstr = document.getElementById("searchframe").value;
+			var str = keywordstr;
+			str = "http://gdata.youtube.com/feeds/api/videos?q="+ str.trim() +"&alt=json-in-script&callback=showMyVideos&max-results=30&format=5";
+			var oldscript = document.getElementById("s1");
+			var newscript = document.createElement("script");
+			newscript.type = "text/javascript";
+			newscript.id = "s1";
+			newscript.src = str;
+			//document.getElementByTagName("body")[1].innerHTML;
+			//documet.getElementById("s1").src = "http://gdata.youtube.com/feeds/api/videos?q="+ str +"&alt=json-in-script&callback=showMyVideos&max-results=30&format=5";
+			document.getElementById("container").replaceChild(newscript, oldscript);
+			//alert(document.getElementById("container").childNodes[6].src);
+			//humane.info(str);
+		}
+		
+	}
+	
+	//start search. move firstpage elements to top
+	function movelements()
+	{
+		fadeIn(iBase.Id('headerlogo'));
+		document.getElementById("container_logo").style.display = "none";
+		document.getElementById("cotainer_searchpanel").style.display = "none";
+		document.getElementById("header").appendChild(document.getElementById("searchframe"));
+		document.getElementById("header").appendChild(document.getElementById("searchbtn"));
+		document.getElementById("searchframe").className="searchpanel_frame header_searchframe";
+		document.getElementById("searchbtn").className="searchpanel_btn header_searchbtn";
+		document.getElementById("searchbtn").onmouseover=function() {this.classNmae='searchpanel_btn header_searchbtn mouseon'};
+		document.getElementById("searchbtn").onmouseout=function() {this.classNmae='searchpanel_btn header_searchbtn'};
+	}
+	
+	//go back to first page. move firstpage elements back to original place
+	function movebacklements()
+	{
+		fadeOut(iBase.Id('headerlogo'));
+		fadeIn(iBase.Id('container_logo'));
+		document.getElementById("cotainer_searchpanel").childNodes[1].appendChild(document.getElementById("searchframe"));
+		document.getElementById("cotainer_searchpanel").appendChild(document.getElementById("searchbtn"));
+		document.getElementById("cotainer_searchpanel").style.display = "block";
+		
+		document.getElementById("searchframe").className="searchpanel_frame";
+		document.getElementById("searchbtn").className="searchpanel_btn";
+		document.getElementById("searchbtn").onmouseover=function() {this.classNmae='searchpanel_btn mouseon'};
+		document.getElementById("searchbtn").onmouseout=function() {this.classNmae='searchpanel_btn'};
+		document.getElementById("searchframe").value = "";
+		document.getElementById("searchframe").focus();
+	}
+	
+	function showMyVideos(data) {
+		var feed = data.feed;
+		entries = feed.entry || [];
+		movelements();
+		//var html = [];
+		//no results
+		if(entries.length<=0)
+		{
+			humane.error("No result found, please refill the keyword!");
+			doucment.getElementById("searchframe").focus();
+		}
+		else
+		{
+			state = 2;
+			for (var i = 0; i < 3; i++) {
+				var entry = entries[i];
+				//var title = entry.title.$t;
+				
+				var thumbnailUrl = entries[i].media$group.media$thumbnail[1].url;
+				
+				//html.push('<li>', title, '</li>');
+				//html.push('<li>', id, '</li>');
+				//var links = entry.link;
+				/*for (var j=0; j<links.length; j++)
+				{
+					var related = links[j].href;
+					html.push('<li>', related, '</li>');
+				}*/
+				//alert(document.getElementById("central_stack").childNodes[1+i*2].src);
+				document.getElementById("central_stack").childNodes[1+i*2].src = thumbnailUrl;
+				//document.getElementById("keydetect").focus;
+				fadeIn(iBase.Id('central_stack'));
+				setTimeout("aniCentralStack()",500);
+				//document.getElementById("central_stack").style.display = "block";
+				
+			}
+			for(var i = 0; i < 8; i++)
+			{
+				var entry = entries[i];
+				var id = entry.id.$t;
+				id = id.substr(id.length-11,11);
+				var newscript = document.createElement("script");
+				newscript.type = "text/javascript";
+				newscript.src = "http://gdata.youtube.com/feeds/api/videos/"+id+"/related?alt=json-in-script&callback=showMyRelatedVideos&max-results=4&format=5";
+				document.getElementById('videos').appendChild(newscript);
+			}
+			//html.push('</ul>');
+		}
+		//document.getElementById('videos').innerHTML += html.join('');
+	}
+		
+	function showMyRelatedVideos(data) {
+		var feed = data.feed;
+		var relatedentries = feed.entry || [];
+		//var entry = entries[i];
+		//var thumbnailUrl = ;
+		document.getElementById("linesgroup1").style.display = "block";
+		document.getElementById("linesgroup2").style.display = "block";
+		drawrelatedvideo(relatedentries);
+		
+	}
+	
+	function getRelatedRelatedVideos(data) {
+		var feed = data.feed;
+		entries = feed.entry || [];
+		for(var i = 0; i < 8; i++)
+		{
+			var entry = entries[i];
+			var rereid = entry.id.$t;
+			rereid = rereid.substr(rereid.length-11,11);
+			var newscript = document.createElement("script");
+			newscript.type = "text/javascript";
+			newscript.src = "http://gdata.youtube.com/feeds/api/videos/"+rereid+"/related?alt=json-in-script&callback=showMyRelatedVideos&max-results=4&format=5";
+			document.getElementById('videos').appendChild(newscript);
+		}
+		//direction = -1;
+	}
+	
+	function sleep(numberMillis) {    
+		var now = new Date();    
+		var exitTime = now.getTime() + numberMillis;   
+		while (true) { 
+			now = new Date();       
+			if (now.getTime() > exitTime) 
+				return;    
+		}
+	}
+	
+	function drawrelatedvideo(RLentries)
+	{
+		if(document.getElementById("right_top_stack").style.display == "none")
+		{
+			document.getElementById("right_top_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("right_top_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("right_top_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(1);
+			fadeIn(iBase.Id('right_top_stack'));
+			fadeIn(iBase.Id('line1'));
+		}
+		else if(document.getElementById("mid_top_stack").style.display == "none")
+		{
+			document.getElementById("mid_top_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("mid_top_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("mid_top_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(2);
+			fadeIn(iBase.Id('mid_top_stack'));
+			fadeIn(iBase.Id('line2'));
+		}
+		else if(document.getElementById("left_top_stack").style.display == "none")
+		{
+			document.getElementById("left_top_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("left_top_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("left_top_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(3);
+			fadeIn(iBase.Id('left_top_stack'));
+			fadeIn(iBase.Id('line3'));
+		}
+		else if(document.getElementById("right_mid_stack").style.display == "none")
+		{
+			document.getElementById("right_mid_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("right_mid_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("right_mid_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(4);
+			fadeIn(iBase.Id('right_mid_stack'));
+			fadeIn(iBase.Id('line4'));
+		}
+		else if(document.getElementById("left_mid_stack").style.display == "none")
+		{
+			document.getElementById("left_mid_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("left_mid_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("left_mid_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(5);
+			fadeIn(iBase.Id('left_mid_stack'));
+			fadeIn(iBase.Id('line5'));
+		}
+		else if(document.getElementById("right_bottom_stack").style.display == "none")
+		{
+			document.getElementById("right_bottom_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("right_bottom_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("right_bottom_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(6);
+			fadeIn(iBase.Id('right_bottom_stack'));
+			fadeIn(iBase.Id('line6'));
+		}
+		else if(document.getElementById("mid_bottom_stack").style.display == "none")
+		{
+			document.getElementById("mid_bottom_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("mid_bottom_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("mid_bottom_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(7);
+			fadeIn(iBase.Id('mid_bottom_stack'));
+			fadeIn(iBase.Id('line7'));
+		}
+		else if(document.getElementById("left_bottom_stack").style.display == "none")
+		{
+			document.getElementById("left_bottom_stack").childNodes[1].src = RLentries[0].media$group.media$thumbnail[1].url;
+			document.getElementById("left_bottom_stack").childNodes[3].src = RLentries[1].media$group.media$thumbnail[1].url;
+			document.getElementById("left_bottom_stack").childNodes[5].src = RLentries[2].media$group.media$thumbnail[1].url;
+			//alert(8);
+			fadeIn(iBase.Id('left_bottom_stack'));
+			fadeIn(iBase.Id('line8'));
+		}
+	}
+	
+	function operatestack()
+	{
+		var event = window.event || arguments.callee.caller.arguments[0];
+		if (event.keyCode == 37)
+		{
+			alert("left");
+		}
+		if (event.keyCode == 38)
+		{
+			alert("up");
+		}
+		if (event.keyCode == 39)
+		{
+			alert("right");
+		}
+		if (event.keyCode == 40)
+		{
+			alert("down");
+		}
+	}
+	
+	function movetodirection(direction)
+	{
+		aniCentralStack2();
+		if(direction == "top-left")
+		{
+			movedetail("left_top_stack","right_bottom_stack",5);
+		}
+		else if(direction == "bottom-right")
+		{
+			movedetail("right_bottom_stack","left_top_stack",2);
+		}
+		else if(direction == "bottom-left")
+		{
+			movedetail("left_bottom_stack","right_top_stack",0);
+		}
+		else if(direction == "top-right")
+		{
+			movedetail("right_top_stack","left_bottom_stack",7);
+		}
+		
+		else if(direction == "left")
+		{
+			movedetail("left_mid_stack","right_mid_stack",3);
+		}
+		else if(direction == "right")
+		{
+			movedetail("right_mid_stack","left_mid_stack",4);
+		}
+		else if(direction == "up")
+		{
+			movedetail("mid_top_stack","mid_bottom_stack",6);
+		}
+		else if(direction == "down")
+		{
+			movedetail("mid_bottom_stack","mid_top_stack",1);
+		}
+		setTimeout("aniCentralStack()",1000);
+	}
+	
+	function movedetail(movetoid,replcentralid,entrynumber)
+	{
+		document.getElementById(movetoid).childNodes[1].src = document.getElementById("central_stack").childNodes[1].src;
+		document.getElementById(movetoid).childNodes[3].src = document.getElementById("central_stack").childNodes[3].src;
+		document.getElementById(movetoid).childNodes[5].src = document.getElementById("central_stack").childNodes[5].src;
+		document.getElementById("central_stack").childNodes[1].src = document.getElementById(replcentralid).childNodes[1].src;
+		document.getElementById("central_stack").childNodes[3].src = document.getElementById(replcentralid).childNodes[3].src;
+		document.getElementById("central_stack").childNodes[5].src = document.getElementById(replcentralid).childNodes[5].src;
+		if(entrynumber != 7)
+		{
+			//fadeOut(iBase.Id('right_top_stack'));
+			//fadeOut(iBase.Id('line1'));
+			document.getElementById("right_top_stack").style.display = "none";
+			document.getElementById("line1").display = "none";
+		}
+		if(entrynumber != 6)
+		{
+			//fadeOut(iBase.Id('mid_top_stack'));
+			//fadeOut(iBase.Id('line2'));
+			document.getElementById("mid_top_stack").style.display = "none";
+			document.getElementById("line2").display = "none";
+		}
+		if(entrynumber != 5)
+		{
+			//fadeOut(iBase.Id('left_top_stack'));
+			//fadeOut(iBase.Id('line3'));
+			document.getElementById("left_top_stack").style.display = "none";
+			document.getElementById("line3").display = "none";
+		}
+		if(entrynumber != 4)
+		{
+			//fadeOut(iBase.Id('right_mid_stack'));
+			//fadeOut(iBase.Id('line4'));
+			document.getElementById("right_mid_stack").style.display = "none";
+			document.getElementById("line4").display = "none";
+		}
+		if(entrynumber != 3)
+		{
+			//fadeOut(iBase.Id('left_mid_stack'));
+			//fadeOut(iBase.Id('line5'));
+			document.getElementById("left_mid_stack").style.display = "none";
+			document.getElementById("line5").display = "none";
+		}
+		if(entrynumber != 2)
+		{
+			//fadeOut(iBase.Id('right_bottom_stack'));
+			//fadeOut(iBase.Id('line6'));
+			document.getElementById("right_bottom_stack").style.display = "none";
+			document.getElementById("line6").display = "none";
+		}
+		if(entrynumber != 1)
+		{
+			//fadeOut(iBase.Id('mid_bottom_stack'));
+			//fadeOut(iBase.Id('line7'));
+			document.getElementById("mid_bottom_stack").style.display = "none";
+			document.getElementById("line7").display = "none";
+		}
+		if(entrynumber != 0)
+		{
+			//fadeOut(iBase.Id('left_bottom_stack'));
+			//fadeOut(iBase.Id('line8'));
+			document.getElementById("left_bottom_stack").style.display = "none";
+			document.getElementById("line8").display = "none";
+		}
+		refill(entrynumber);
+	}
+	
+	function refill(entrynum)
+	{
+		temid = entries[entrynum].id.$t;
+		temid = temid.substr(temid.length-11,11);
+		var newscript = document.createElement("script");
+		newscript.type = "text/javascript";
+		newscript.src = "http://gdata.youtube.com/feeds/api/videos/"+temid+"/related?alt=json-in-script&callback=getRelatedRelatedVideos&max-results=30&format=5";
+		document.getElementById('videos').appendChild(newscript);
+	}
+	
+	function zoomout()
+	{
+		cleanstacks();
+		var counter = 0;
+		var html = ['<ul class="videos">'];
+		for (var i = 0; i < entries.length; i++) {
+			var entry = entries[i];
+			var title = entry.title.$t.substr(0, 20);
+			var thumbnailUrl = entries[i].media$group.media$thumbnail[0].url;
+			var playerUrl = entries[i].media$group.media$content[0].url;
+			html.push('<li onclick="loadVideo(\'', playerUrl, '\', false)" id="videolist',i,'">',
+				  '<img src="',thumbnailUrl, '" width="130" height="97"/><span class="playbtn" style="display:none"></span><br/><span class="titlec">', title, '...</span>', '</li>');
+			counter++;
+			if(counter >= 6)
+			{
+				counter = 0;
+				html.push('</ul><br style="clear: both;"/>','<ul class="videos">');
+			}
+		}
+		html.push('</ul><br style="clear: both;"/>');
+		document.getElementById('videos').innerHTML = html.join('');
+		chosedzoomout(0);
+		setTimeout("setstate(3)",1000);
+		
+	}
+	
+	function setstate(number)
+	{
+		state = number;
+	}
+	
+	function chosedzoomout(chosedId)
+	{
+		currentchoice = chosedId;
+		var temid = "videolist" + String(chosedId);
+		document.getElementById(temid).childNodes[0].style.zoom = 1.1;
+		document.getElementById(temid).childNodes[0].style.opacity = 1;
+		document.getElementById(temid).childNodes[0].style.marginLeft = "-5px";
+		document.getElementById(temid).childNodes[0].style.marginTop = "-2px";
+		document.getElementById(temid).childNodes[1].style.display = "inline";
+	}
+	
+	function unchoosezoomout(chosedId)
+	{
+		var temid = "videolist" + String(chosedId);
+		document.getElementById(temid).childNodes[0].style.zoom = 1;
+		document.getElementById(temid).childNodes[0].style.opacity = 0.5;
+		document.getElementById(temid).childNodes[0].style.marginLeft = "0px";
+		document.getElementById(temid).childNodes[0].style.marginTop = "0px";
+		document.getElementById(temid).childNodes[1].style.display = "none";
+	}
+	//chane choice on videolist
+	function chagechoice(toId)
+	{
+		//humane.info(currentid);
+		var currentid = currentchoice;
+		if(toId == "top-right")
+		{
+			if(((currentid-5)%6 != 0)&&(currentid-5 > 0))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid-5;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "up")
+		{
+			if(currentid-6 >= 0)
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid-6;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "top-left")
+		{
+			if(((currentid)%6 != 0)&&(currentid-7 >= 0))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid-7;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "right")
+		{
+			if(((currentid+1)%6 != 0)&&(currentid+1 < entries.length))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid+1;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "left")
+		{
+			if(((currentid)%6 != 0)&&(currentid-1 >= 0))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid-1;
+				chosedzoomout(currentid);
+			}
+		}		
+		else if(toId == "bottom-right")
+		{
+			if(((currentid+1)%6 != 0)&&(currentid+7 < entries.length))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid+7;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "down")
+		{
+			if(currentid+6 < entries.length)
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid+6;
+				chosedzoomout(currentid);
+			}
+		}
+		else if(toId == "bottom-left")
+		{
+			if(((currentid)%6 != 0)&&(currentid+5 < entries.length))
+			{
+				unchoosezoomout(currentid);
+				currentid = currentid+5;
+				chosedzoomout(currentid);
+			}
+		}
+	}
+	
+	function playvideo()
+	{
+		drawmask();
+		var playerUrl = entries[currentchoice].media$group.media$content[0].url;
+		loadVideo(playerUrl, true);
+		document.getElementById("playerContainer").style.display = "block";
+		setTimeout("setstate(4)",1000);
+	}
+	
+	function loadVideo(playerUrl, autoplay) {
+		var params = { allowScriptAccess: "always", allowfullscreen: 'true'};
+		var atts = { id: "myytplayer" };
+		swfobject.embedSWF(playerUrl + '&rel=1&border=0&fs=1&autoplay=' + (autoplay?1:0) +'&enablejsapi=1&playerapiid=ytplayer', 'myytplayer', '800', '600', '9.0.0', false, false, params, atts);
+	}
+	
+	function onYouTubePlayerReady(playerId) {
+      ytplayer = document.getElementById("myytplayer");
+    }
+	
+	function louder()
+	{
+		if(ytplayer.getVolume()+10 >= 100)
+		{
+			ytplayer.setVolume(100);
+		}
+		else
+		{
+			ytplayer.setVolume(ytplayer.getVolume()+25);
+		}
+	}
+	
+	function lesslouder()
+	{
+		if(ytplayer.getVolume()-10 <= 0)
+		{
+			ytplayer.setVolume(0);
+		}
+		else
+		{
+			ytplayer.setVolume(ytplayer.getVolume()-25);
+		}
+	}
+	
+	function seekmore()
+	{
+		if(ytplayer.getCurrentTime()+10>=ytplayer.getDuration())
+		{
+			ytplayer.seekTo(ytplayer.getCurrentTime(),true);
+		}
+		else
+		{
+			ytplayer.seekTo(ytplayer.getCurrentTime()+10,true);
+		}
+	}
+	
+	function seekless()
+	{
+		if(ytplayer.getCurrentTime()-10<=0)
+		{
+			ytplayer.seekTo(0,true);
+		}
+		else
+		{
+			ytplayer.seekTo(ytplayer.getCurrentTime()-10,true);
+		}
+	}
+	
+	function changeplayerstate()
+	{
+		if(ytplayer.getPlayerState() == 1)
+		{
+			ytplayer.pauseVideo();
+		}
+		else if(ytplayer.getPlayerState() == 0 || ytplayer.getPlayerState() == 2)
+		{
+			ytplayer.playVideo();
+		}
+	}
+	
+	function playergoback()
+	{
+		ytplayer.stopVideo();
+		document.getElementById("playerContainer").style.display = "none";
+		document.getElementById("container").removeChild(document.getElementById("masker"));
+		var newsobject = document.createElement("object");
+		newsobject.id = "myytplayer";
+		var oldobject = document.getElementById("myytplayer");
+		document.getElementById("playerContainer").replaceChild(newsobject,oldobject);
+		setTimeout("setstate(3)",1000);
+	}
+	
+	function videolistgoback()
+	{
+		var videosul = document.getElementsByTagName('ul');
+		var videosbr = document.getElementsByTagName('br');
+		var counterul = videosul.length;
+		var counterbr = videosbr.length;
+		for (var i=counterbr-1; i>=0; i--)
+		{
+			var tem = videosbr[i];
+			if(videosbr[i].style.clear == "both")
+			{
+				document.getElementById("videos").removeChild(tem);
+			}
+		}
+		for (var i=counterul-1; i>=0; i--)
+		{
+			var tem = videosul[i];
+			if(videosul[i].className == "videos")
+			{
+				document.getElementById("videos").removeChild(tem);
+			}
+		}
+		
+		regainstacks();
+		setTimeout("setstate(2)",1000);
+	}
+	
+	function stacksgoback()
+	{
+		cleanstacks();
+		entries = [];
+		document.getElementById("right_top_stack").childNodes[1].src = "";
+		document.getElementById("right_top_stack").childNodes[3].src = "";
+		document.getElementById("right_top_stack").childNodes[5].src = "";
+		
+		document.getElementById("mid_top_stack").childNodes[1].src = "";
+		document.getElementById("mid_top_stack").childNodes[3].src = "";
+		document.getElementById("mid_top_stack").childNodes[5].src = "";
+		
+		document.getElementById("left_top_stack").childNodes[1].src = "";
+		document.getElementById("left_top_stack").childNodes[3].src = "";
+		document.getElementById("left_top_stack").childNodes[5].src = "";
+		
+		document.getElementById("right_mid_stack").childNodes[1].src = "";
+		document.getElementById("right_mid_stack").childNodes[3].src = "";
+		document.getElementById("right_mid_stack").childNodes[5].src = "";
+		
+		document.getElementById("central_stack").childNodes[1].src = "";
+		document.getElementById("central_stack").childNodes[3].src = "";
+		document.getElementById("central_stack").childNodes[5].src = "";
+		
+		document.getElementById("left_mid_stack").childNodes[1].src = "";
+		document.getElementById("left_mid_stack").childNodes[3].src = "";
+		document.getElementById("left_mid_stack").childNodes[5].src = "";
+		
+		document.getElementById("right_bottom_stack").childNodes[1].src = "";
+		document.getElementById("right_bottom_stack").childNodes[3].src = "";
+		document.getElementById("right_bottom_stack").childNodes[5].src = "";
+		
+		document.getElementById("mid_bottom_stack").childNodes[1].src = "";
+		document.getElementById("mid_bottom_stack").childNodes[3].src = "";
+		document.getElementById("mid_bottom_stack").childNodes[5].src = "";
+		
+		document.getElementById("left_bottom_stack").childNodes[1].src = "";
+		document.getElementById("left_bottom_stack").childNodes[3].src = "";
+		document.getElementById("left_bottom_stack").childNodes[5].src = "";
+		
+		document.getElementById("s1").src = "";
+		var tem = document.getElementById("videos");
+		var counter = tem.childNodes.length;
+		for(var i = counter-1; i >=0; i--)
+		{
+			if(tem.childNodes[i].type="text/javascript")
+			{
+				var temtem = tem.childNodes[i];
+				tem.removeChild(temtem);
+			}
+		}
+		movebacklements();
+		setTimeout("setstate(1)",1000);
+	}
+	
+	function drawinstruction()
+	{
+		var div=top.document.createElement("div");
+		div.id = "insmasker";
+ 		div.style.width=top.document.documentElement.scrollWidth+"px";
+		div.style.height=top.document.documentElement.scrollHeight+"px";
+		div.style.backgroundColor="black";
+		div.style.position="absolute";
+		div.style.left=0;
+		div.style.top=0;
+		div.style.zIndex=9998;
+		if(top.document.all) {div.style.filter = "alpha(opacity=70)";}
+		else {div.style.opacity = .7;}
+		var divinner=top.document.createElement("div");
+		divinner.id = "instructioncontainer";
+		divinner.style.width = "960px";
+		divinner.style.height = "600px";
+		divinner.style.background = "url('images/instruction.png') no-repeat 0 0";
+		divinner.style.marginLeft = "-4px";
+		divinner.style.marginTop = "-450px";
+		divinner.style.border = "#979797 solid 4px";
+		divinner.style.position="absolute";
+		divinner.style.zIndex=10000;
+		//div.appendChild(divinner);
+		top.document.getElementById("container").appendChild(div);
+		top.document.getElementById("container").appendChild(divinner);
+	}
+	
+	function removeinstruction()
+	{
+		var m = document.getElementById("insmasker");
+		var mc = document.getElementById("instructioncontainer");
+		document.getElementById("container").removeChild(m);
+		document.getElementById("container").removeChild(mc);
+	}
+	
+	function drawmask()
+	{
+		var div=top.document.createElement("div");
+		div.id = "masker";
+ 		div.style.width=top.document.documentElement.scrollWidth+"px";
+		div.style.height=top.document.documentElement.scrollHeight+"px";
+		div.style.backgroundColor="black";
+		div.style.position="absolute";
+		div.style.left=0;
+		div.style.top=0;
+		div.style.zIndex=9998;
+		if(top.document.all) {div.style.filter = "alpha(opacity=70)";}
+		else {div.style.opacity = .7;}
+		top.document.getElementById("container").appendChild(div);
+	}
+		
+	function cleanstacks()
+	{
+		fadeOut(iBase.Id('line1'));
+		fadeOut(iBase.Id('line2'));
+		fadeOut(iBase.Id('line3'));
+		fadeOut(iBase.Id('line4'));
+		fadeOut(iBase.Id('line5'));
+		fadeOut(iBase.Id('line6'));
+		fadeOut(iBase.Id('line7'));
+		fadeOut(iBase.Id('line8'));
+		document.getElementById("linesgroup1").style.display = "none";
+		document.getElementById("linesgroup2").style.display = "none";
+		fadeOut(iBase.Id('right_top_stack'));
+		fadeOut(iBase.Id('mid_top_stack'));
+		fadeOut(iBase.Id('left_top_stack'));
+		fadeOut(iBase.Id('right_mid_stack'));
+		fadeOut(iBase.Id('left_mid_stack'));
+		fadeOut(iBase.Id('right_bottom_stack'));
+		fadeOut(iBase.Id('mid_bottom_stack'));
+		fadeOut(iBase.Id('left_bottom_stack'));
+		fadeOut(iBase.Id('left_bottom_stack'));
+		fadeOut(iBase.Id('central_stack'));
+	}
+	
+	function regainstacks()
+	{
+		fadeIn(iBase.Id('line1'));
+		fadeIn(iBase.Id('line2'));
+		fadeIn(iBase.Id('line3'));
+		fadeIn(iBase.Id('line4'));
+		fadeIn(iBase.Id('line5'));
+		fadeIn(iBase.Id('line6'));
+		fadeIn(iBase.Id('line7'));
+		fadeIn(iBase.Id('line8'));
+		document.getElementById("linesgroup1").style.display = "block";
+		document.getElementById("linesgroup2").style.display = "block";
+		fadeIn(iBase.Id('right_top_stack'));
+		fadeIn(iBase.Id('mid_top_stack'));
+		fadeIn(iBase.Id('left_top_stack'));
+		fadeIn(iBase.Id('right_mid_stack'));
+		fadeIn(iBase.Id('left_mid_stack'));
+		fadeIn(iBase.Id('right_bottom_stack'));
+		fadeIn(iBase.Id('mid_bottom_stack'));
+		fadeIn(iBase.Id('left_bottom_stack'));
+		fadeIn(iBase.Id('left_bottom_stack'));
+		fadeIn(iBase.Id('central_stack'));
+	}
+	
+	function aniCentralStack()
+	{
+		document.getElementById("photo1").className="stackphotos rotate1";
+		document.getElementById("photo2").className="stackphotos rotate2";
+		document.getElementById("photo3").className="stackphotos rotate3";
+		document.getElementById("photo1").style.left="150px";
+		document.getElementById("photo3").style.left="50px";
+	}
+	
+	function aniCentralStack2()
+	{
+		document.getElementById("photo1").className="stackphotos";
+		document.getElementById("photo2").className="stackphotos";
+		document.getElementById("photo3").className="stackphotos";
+		document.getElementById("photo1").style.left="";
+		document.getElementById("photo3").style.left="";
+	}
+</script>
+</head>
+
+<body>
+	<div id="header">
+		<a href="" id="headerlogo" style="display:none; float:left;"><img alt="Video Search V1.0" src="images/logomin.png" /></a>
+		<input type="text" maxlength="100" id="header_searchframe" class="searchpanel_frame" style="display:none;"/>
+		<input type="button" style="display:none;" class="searchpanel_btn" id="header_searchbtn" onmouseover="this.className='searchpanel_btn mouseon'" onmouseout="this.className='searchpanel_btn'" onclick=""/>
+	</div><!--header ended-->
+	<div id="container">
+		<div class="logopic" id="container_logo">
+			<a href=""><img alt="Video Search V1.0" src="images/logo.png" /></a>
+		</div>
+		<div class="searchpanel" id="cotainer_searchpanel">
+			<div class="searchpanel_frame_wrap">
+				<input type="text" id="searchframe" maxlength="100" class="searchpanel_frame" speech x-webkit-speech x-webkit-grammar="builtin:search" lang="en-US" onwebkitspeechchange="search()" autofocus placeholder="key word" onkeydown="entersearch()"/>
+			</div>
+			<input type="button" id="searchbtn" value="" class="searchpanel_btn" onmouseover="this.className='searchpanel_btn mouseon'" onmouseout="this.className='searchpanel_btn'" onclick="search()"/>
+		</div><!--searchpanel ended-->
+		<script type="text/javascript"  id="s1"></script>
+		<div id="videos"></div>
+		
+	</br></br></br>
+	<layer style="float:right; display:none" id="linesgroup1">
+	<svg width="480" height="500">
+		<line class="link" id="line1" x1="0" y1="280" x2="270" y2="65" stroke="#0782e0" display="none"></line>
+		<line class="link" id="line2" x1="0" y1="280" x2="0" y2="65" stroke="#1294f7" display="none"></line>
+		<line class="link" id="line4" x1="0" y1="280" x2="270" y2="280" stroke="#53b1fa" display="none"></line>
+		<line class="link" id="line6" x1="0" y1="280" x2="270" y2="470" stroke="#95cffc" display="none"></line>
+	</svg>
+	</layer>
+	<layer style="float:left; display:none" id="linesgroup2">
+	<svg width="480" height="500">
+		<line class="link" id="line3" x1="480" y1="280" x2="210" y2="65" stroke="#33a3f8" display="none"></line>
+		<line class="link" id="line5" x1="480" y1="280" x2="210" y2="280" stroke="#74c0fb" display="none"></line>
+		<line class="link" id="line8" x1="480" y1="280" x2="210" y2="470" stroke="#d7edfe" display="none"></line>
+		<line class="link" id="line7" x1="480" y1="280" x2="480" y2="470" stroke="#b6defd" display="none"></line>
+	</svg>
+	</layer>
+	 <!--top part-->
+	<div class="image_stack" id="left_top_stack" style="margin-left:0px; display:none;">
+		<img id="photo4" class="stackphotos" style="border-color:#33a3f8" src="">
+		<img id="photo5" class="stackphotos" style="border-color:#33a3f8" src="">
+		<img id="photo6" class="stackphotos" style="border-color:#33a3f8" src="">
+	</div>
+	<div class="image_stack" id="mid_top_stack" style="margin-left:auto; margin-right:auto; display:none;">
+		<img id="photo7" class="stackphotos" style="border-color:#1294f7;" src="">
+		<img id="photo8" class="stackphotos" style="border-color:#1294f7;" src="">
+		<img id="photo9" class="stackphotos" style="border-color:#1294f7;" src="">
+	</div>
+	<div class="image_stack" id="right_top_stack" style="margin-left:560px; padding-top:200px; display:none;">
+		<img id="photo10" class="stackphotos" style="border-color:#0782e0;" src="">
+		<img id="photo11" class="stackphotos" style="border-color:#0782e0;" src="">
+		<img id="photo12" class="stackphotos" style="border-color:#0782e0;" src="">
+	</div>
+	<!--mid part-->
+	<div class="image_stack" id="left_mid_stack" style="margin-left:0px; display:none;">
+		<img id="photo13" class="stackphotos" style="border-color:#74c0fb" src="">
+		<img id="photo14" class="stackphotos" style="border-color:#74c0fb" src="">
+		<img id="photo15" class="stackphotos" style="border-color:#74c0fb" src="">
+	</div>
+	<div class="image_stack" id="central_stack" style="margin-left:auto; margin-right:auto; display:none;">
+		<img id="photo1" class="stackphotos" src="">
+		<img id="photo2" class="stackphotos" src="">
+		<img id="photo3" class="stackphotos" src="">
+	</div>
+	<div class="image_stack" id="right_mid_stack" style="margin-left:560px; padding-top:200px; display:none;">
+		<img id="photo16" class="stackphotos" style="border-color:#53b1fa" src="">
+		<img id="photo17" class="stackphotos" style="border-color:#53b1fa" src="">
+		<img id="photo18" class="stackphotos" style="border-color:#53b1fa" src="">
+	</div>
+	<!--bottom part-->
+	<div class="image_stack" id="left_bottom_stack" style="margin-left:0px; display:none;">
+		<img id="photo19" class="stackphotos" style="border-color:#d7edfe" src="">
+		<img id="photo20" class="stackphotos" style="border-color:#d7edfe" src="">
+		<img id="photo21" class="stackphotos" style="border-color:#d7edfe" src="">
+	</div>
+	<div class="image_stack" id="mid_bottom_stack" style="margin-left:auto; margin-right:auto; display:none;">
+		<img id="photo22" class="stackphotos" style="border-color:#b6defd" src="">
+		<img id="photo23" class="stackphotos" style="border-color:#b6defd" src="">
+		<img id="photo24" class="stackphotos" style="border-color:#b6defd" src="">
+	</div>
+	<div class="image_stack" id="right_bottom_stack" style="margin-left:560px; display:none;">
+		<img id="photo25" class="stackphotos" style="border-color:#95cffc" src="">
+		<img id="photo26" class="stackphotos" style="border-color:#95cffc" src="">
+		<img id="photo27" class="stackphotos" style="border-color:#95cffc" src="">
+	</div>
+	<!--div id="keytest">Press some key</div-->
+	<!--input id="keydetect" type="button" class="transbutton" onkeydown="operatestack()"></input-->
+	<div id="playerContainer" style="display:none">
+		<object id="myytplayer"></object>
+	</div>
+		<!--iframe class="youtube-player" type="text/html" width="640" height="385" src="http://www.youtube.com/embed/JW5meKfy3fY" frameborder="0"></iframe-->
+	</div><!--container ended-->
+	<div id="footer">
+		Copyright &copy;2012 Video Search V1.0, Liacs Human Computer Interaction
+	</div><!--footer ended-->
+	
+</body>
+
+
+
+</html>
