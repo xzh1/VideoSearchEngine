@@ -26,8 +26,8 @@ folder, run 'kinect.exe' and open the video search engine to play with it.
 
 If you don't have a Kinect, you can still use keyboard to try the site.
 
-ENTER is for forward. 
-CTRL is for going back. 
-LEFT, RIGHT, UP, DOWN and 1, 2, 3, 4 keys are for 8 directions movement. 
-LEFT, RIGHT keys are also for progress control while playing videos. 
+ENTER is for forward.
+CTRL is for going back.
+LEFT, RIGHT, UP, DOWN and 1, 2, 3, 4 keys are for 8 directions movement.
+LEFT, RIGHT keys are also for progress control while playing videos.
 UP, DOWN keys are for sound volume control while playing videos.
